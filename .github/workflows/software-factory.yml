@@ -1,0 +1,46 @@
+name: Software Factory Verification & Auto-Merge Gate
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  verify-and-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Layer 1 — Deterministic Constraints, Boundaries & Feature Map
+        run: npm run factory:check
+
+      - name: Layer 2 — Full Verification Pipeline & Proof Artifact Bundle
+        run: npm run factory:verify
+
+      - name: Layer 2b — Independent Adversarial Review (Diff-Bound)
+        if: github.event_name == 'pull_request'
+        run: node bin/factory.mjs review --base origin/${{ github.base_ref }} --author "${{ github.actor }}"
+
+      - name: Layer 2c — Deterministic Auto-Merge Gate & Circuit Breaker Check
+        if: github.event_name == 'pull_request'
+        run: node bin/factory.mjs gate --base origin/${{ github.base_ref }}
+
+      - name: Upload Proof Artifact Bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-artifacts-${{ github.run_id }}
+          path: artifacts/verifications/

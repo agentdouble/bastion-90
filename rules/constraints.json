@@ -1,0 +1,76 @@
+{
+  "version": "2.0.0",
+  "description": "Deterministic codebase constraints. Every agent mistake must be encoded here as a permanent check rather than added as prose in AGENTS.md.",
+  "rules": [
+    {
+      "id": "no-react-use-effect-in-product",
+      "severity": "error",
+      "category": "banned-api",
+      "pattern": "\\buseEffect\\s*\\(",
+      "excludeDirs": ["src/framework"],
+      "message": "useEffect is banned in product code. Encapsulate lifecycle synchronization inside src/framework primitives.",
+      "rationale": "Nuance-heavy async hooks are a prime source of race conditions and AI slop.",
+      "origin": "lauren-tan-baseline"
+    },
+    {
+      "id": "no-lint-suppression",
+      "severity": "error",
+      "category": "escape-hatch",
+      "pattern": "(eslint-disable|@ts-ignore|@ts-nocheck|@ts-expect-error)",
+      "excludeDirs": [],
+      "message": "Lint and type suppressions are forbidden. Fix the root cause or strengthen the type/architecture.",
+      "rationale": "Suppressions act as rationalization escape hatches for coding agents.",
+      "origin": "lauren-tan-baseline"
+    },
+    {
+      "id": "no-empty-catch",
+      "severity": "error",
+      "category": "error-handling",
+      "pattern": "catch\\s*(\\([^)]*\\))?\\s*\\{\\s*\\}",
+      "excludeDirs": [],
+      "message": "Empty catch blocks silently swallow failures. Handle explicitly or propagate.",
+      "rationale": "Silent failure handling breaks runtime verification guarantees.",
+      "origin": "lauren-tan-baseline"
+    },
+    {
+      "id": "no-any-type",
+      "severity": "error",
+      "category": "type-discipline",
+      "pattern": ":\\s*any\\b|\\bas\\s+any\\b",
+      "excludeDirs": [],
+      "message": "Explicit 'any' undermines deterministic type constraints. Model the domain explicitly.",
+      "rationale": "Type System Discipline — make illegal states unrepresentable.",
+      "origin": "lauren-tan-baseline"
+    },
+    {
+      "id": "no-deferred-work-markers",
+      "severity": "error",
+      "category": "slop-hygiene",
+      "pattern": "\\b(TODO|FIXME|HACK|XXX)\\b",
+      "excludeDirs": [],
+      "message": "Unresolved TODO/FIXME/HACK markers are forbidden in merged code.",
+      "rationale": "Incomplete work must never enter main; either resolve it or track it in the task queue.",
+      "origin": "lauren-tan-baseline"
+    },
+    {
+      "id": "no-debug-console-in-core",
+      "severity": "error",
+      "category": "runtime-hygiene",
+      "pattern": "\\bconsole\\.(log|debug)\\s*\\(",
+      "excludeDirs": ["bin"],
+      "message": "console.log/debug is banned outside CLI entrypoints (bin/). Return structured data instead.",
+      "rationale": "Keep core modules pure and deterministic for verification and artifact generation.",
+      "origin": "lauren-tan-baseline"
+    },
+    {
+      "id": "no-spawn-shell-true",
+      "severity": "error",
+      "category": "security-hygiene",
+      "pattern": "\\bshell\\s*:\\s*true\\b",
+      "excludeDirs": [],
+      "message": "Child process execution with shell: true is banned. Pass explicit argument arrays directly.",
+      "rationale": "Encoded from DEP0190 warning during verification to eliminate shell injection vectors.",
+      "origin": "encode-rule"
+    }
+  ]
+}

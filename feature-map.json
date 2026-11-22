@@ -1,0 +1,106 @@
+{
+  "version": "2.0.0",
+  "description": "Feature Map for BASTION 90 — 90-second medieval micro-survivor web game.",
+  "features": [
+    {
+      "id": "domain-catalog-and-rng",
+      "name": "Medieval Catalog, PRNG & Domain State",
+      "surface": "domain",
+      "owner": "engineering",
+      "files": [
+        "src/domain/rng.js",
+        "src/domain/math.js",
+        "src/domain/catalog.js",
+        "src/domain/state.js"
+      ],
+      "invariants": [
+        "Deterministic PRNG produces identical sequences for identical seeds and daily dates",
+        "Domain layer has zero imports outside src/domain/"
+      ],
+      "verificationProbe": "npm test"
+    },
+    {
+      "id": "headless-survivor-engine",
+      "name": "90-Second Combat, Wave & Boss Simulation Engine",
+      "surface": "engine",
+      "owner": "engineering",
+      "files": [
+        "src/engine/spawner.js",
+        "src/engine/weapons.js",
+        "src/engine/enemies.js",
+        "src/engine/upgrades.js",
+        "src/engine/combat.js",
+        "src/engine/simulation.js"
+      ],
+      "invariants": [
+        "Engine executes deterministically without DOM or browser globals",
+        "Arch-Lich boss spawns at 65s and defeating it transitions to victory",
+        "All entity positions remain finite and clamped within arena boundaries"
+      ],
+      "verificationProbe": "npm test"
+    },
+    {
+      "id": "browser-framework-adapters",
+      "name": "Procedural Audio, Input, Storage & Game Loop",
+      "surface": "framework",
+      "owner": "engineering",
+      "files": [
+        "src/framework/audio.js",
+        "src/framework/input.js",
+        "src/framework/storage.js",
+        "src/framework/loop.js"
+      ],
+      "invariants": [
+        "All browser APIs (WebAudio, localStorage, DOM events, rAF) remain isolated inside src/framework/"
+      ],
+      "verificationProbe": "npm run factory:check"
+    },
+    {
+      "id": "medieval-canvas-renderer",
+      "name": "Stylized Medieval Courtyard, Sprites & VFX Renderer",
+      "surface": "render",
+      "owner": "engineering",
+      "files": [
+        "src/render/arena.js",
+        "src/render/sprites.js",
+        "src/render/effects.js",
+        "src/render/renderer.js"
+      ],
+      "invariants": [
+        "Renderer never mutates simulation state"
+      ],
+      "verificationProbe": "npm run factory:check"
+    },
+    {
+      "id": "web-app-shell",
+      "name": "Web UI Shell, HUD & Level-Up Overlays",
+      "surface": "app",
+      "owner": "engineering",
+      "files": [
+        "index.html",
+        "styles/main.css",
+        "src/app/ui.js",
+        "src/app/main.js"
+      ],
+      "invariants": [
+        "Instant restart resets simulation cleanly without page reload"
+      ],
+      "verificationProbe": "npm run factory:verify"
+    },
+    {
+      "id": "factory-cli-and-server",
+      "name": "Static Dev Server & Deterministic Factory Gate CLI",
+      "surface": "cli",
+      "owner": "engineering",
+      "files": [
+        "AGENTS.md",
+        "bin/serve.mjs",
+        "bin/factory.mjs"
+      ],
+      "invariants": [
+        "All deterministic constraints, boundaries, and tests pass cleanly"
+      ],
+      "verificationProbe": "npm run factory:verify"
+    }
+  ]
+}

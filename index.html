@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>BASTION 90 — Survie Médiévale Express</title>
+  <link rel="stylesheet" href="./styles/main.css" />
+</head>
+<body>
+  <div id="game-shell">
+    <canvas id="arena-canvas" aria-label="Arène de Bastion 90"></canvas>
+
+    <header id="hud" class="hud hidden" aria-live="polite">
+      <div class="hud-left">
+        <div class="bar-group">
+          <div class="bar-label">
+            <span>VIE</span>
+            <span id="hud-hp-text">100 / 100</span>
+          </div>
+          <div class="bar-track hp-track">
+            <div id="hud-hp-fill" class="bar-fill hp-fill"></div>
+          </div>
+        </div>
+        <div class="bar-group xp-group">
+          <div class="bar-label">
+            <span id="hud-lvl-text">NIV. 1</span>
+            <span id="hud-dash-text">ROULADE PRÊTE</span>
+          </div>
+          <div class="bar-track xp-track">
+            <div id="hud-xp-fill" class="bar-fill xp-fill"></div>
+          </div>
+        </div>
+        <div id="hud-loadout" class="loadout-strip"></div>
+      </div>
+
+      <div class="hud-center">
+        <div id="hud-phase" class="phase-tag">L'AVANT-GARDE</div>
+        <div id="hud-timer" class="timer-display">01:30</div>
+        <div id="hud-boss-wrap" class="boss-bar-wrap hidden">
+          <div id="hud-boss-name" class="boss-name">SEIGNEUR LICHE</div>
+          <div class="bar-track boss-track">
+            <div id="hud-boss-fill" class="bar-fill boss-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud-right">
+        <div class="score-box">
+          <div class="score-label">SCORE</div>
+          <div id="hud-score" class="score-value">0</div>
+        </div>
+        <div class="meta-pills">
+          <span id="hud-combo" class="pill combo-pill">×1</span>
+          <span id="hud-kills" class="pill kills-pill">0 ⚔</span>
+          <button id="btn-mute" class="icon-btn" type="button" title="Audio (M)">🔊</button>
+          <button id="btn-pause" class="icon-btn" type="button" title="Pause (P)">⏸</button>
+        </div>
+      </div>
+    </header>
+
+    <div id="banner-toast" class="banner-toast hidden"></div>
+
+    <button id="touch-dash-btn" class="touch-dash-btn hidden" type="button">ROULADE</button>
+
+    <section id="title-overlay" class="overlay-backdrop">
+      <div class="medieval-panel title-panel">
+        <div class="crest-badge">⚔ 90 SECONDES JUSQU'À L'AUBE ⚔</div>
+        <h1 class="game-title">BASTION <span>90</span></h1>
+        <p class="game-subtitle">
+          Tiens la cour du château face à la horde. Forge ton arsenal à la volée,
+          esquive au millimètre et terrasse le <strong>Seigneur Liche</strong>.
+        </p>
+
+        <div class="mode-switch" role="group" aria-label="Mode de jeu">
+          <button id="mode-classic" class="mode-btn active" type="button">
+            <strong>SIÈGE CLASSIQUE</strong>
+            <span>Vagues &amp; reliques aléatoires</span>
+          </button>
+          <button id="mode-daily" class="mode-btn" type="button">
+            <strong>DÉFI DU JOUR</strong>
+            <span id="daily-date-label">Graine du jour</span>
+          </button>
+        </div>
+
+        <button id="btn-play" class="cta-btn" type="button">
+          ENTRER DANS LA COUR <kbd>ENTRÉE</kbd>
+        </button>
+
+        <div id="records-row" class="records-row"></div>
+
+        <div class="controls-grid">
+          <div><kbd>ZQSD</kbd> / <kbd>WASD</kbd> / <kbd>↑↓←→</kbd> <span>Déplacement</span></div>
+          <div><kbd>ESPACE</kbd> / <kbd>SHIFT</kbd> <span>Roulade &amp; Parade</span></div>
+          <div><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <span>Choix d'amélioration</span></div>
+          <div><kbd>R</kbd> <span>Restart instantané</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="levelup-overlay" class="overlay-backdrop hidden">
+      <div class="medieval-panel levelup-panel">
+        <div class="crest-badge">✦ FORGE DE GUERRE ✦</div>
+        <h2 id="levelup-title" class="modal-title">NIVEAU SUPÉRIEUR !</h2>
+        <p class="modal-sub">Choisis un pouvoir — clic ou touche <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></p>
+        <div id="upgrade-cards" class="upgrade-cards"></div>
+      </div>
+    </section>
+
+    <section id="pause-overlay" class="overlay-backdrop hidden">
+      <div class="medieval-panel compact-panel">
+        <h2 class="modal-title">PAUSE</h2>
+        <div class="stack-actions">
+          <button id="btn-resume" class="cta-btn" type="button">REPRENDRE <kbd>P</kbd></button>
+          <button id="btn-pause-restart" class="secondary-btn" type="button">RECOMMENCER <kbd>R</kbd></button>
+          <button id="btn-pause-menu" class="secondary-btn" type="button">MENU PRINCIPAL</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="gameover-overlay" class="overlay-backdrop hidden">
+      <div class="medieval-panel summary-panel">
+        <div id="end-badge" class="crest-badge">FIN DU SIÈGE</div>
+        <div class="end-header">
+          <div>
+            <h2 id="end-title" class="modal-title">TOMBÉ AU COMBAT</h2>
+            <p id="end-subtitle" class="modal-sub"></p>
+          </div>
+          <div id="end-rank" class="rank-seal">A</div>
+        </div>
+        <div id="end-stats" class="stats-grid"></div>
+        <div id="end-build" class="build-recap"></div>
+        <div class="end-actions">
+          <button id="btn-retry" class="cta-btn" type="button">ENCORE UNE PARTIE ! <kbd>R</kbd></button>
+          <button id="btn-menu" class="secondary-btn" type="button">MENU</button>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script type="module" src="./src/app/main.js"></script>
+</body>
+</html>

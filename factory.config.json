@@ -1,0 +1,121 @@
+{
+  "factoryName": "test2",
+  "version": "2.0.0",
+  "trustPyramid": {
+    "baseLayer": "deterministic-constraints-and-boundaries",
+    "middleLayer": "independent-review-verification-artifacts-and-formal-specs",
+    "topLayer": "minimal-prose-playbooks-and-human-governance"
+  },
+  "scan": {
+    "includeDirs": [
+      "src"
+    ],
+    "extensions": [
+      ".mjs",
+      ".js",
+      ".ts",
+      ".tsx",
+      ".jsx"
+    ],
+    "ignoreDirs": [
+      "node_modules",
+      ".git",
+      "artifacts",
+      ".factory",
+      "dist"
+    ],
+    "frameworkDirs": [
+      "src/framework"
+    ]
+  },
+  "slopPolicy": {
+    "banComments": true,
+    "allowedCommentPrefixes": [
+      "@invariant",
+      "@safety",
+      "@spec"
+    ],
+    "maxFileLines": 350,
+    "maxFunctionLines": 60
+  },
+  "boundaries": {
+    "layers": []
+  },
+  "diffBudget": {
+    "maxChangedFiles": 15,
+    "maxChangedLines": 600
+  },
+  "criticalPaths": [
+    "^factory\\.config\\.json$",
+    "^rules/constraints\\.json$",
+    "^formal/",
+    "(^|/)auth(/|$)",
+    "(^|/)(billing|payments?)(/|$)",
+    "(^|/)migrations?(/|$)",
+    "prisma/schema\\.prisma$"
+  ],
+  "reviewPolicy": {
+    "requireIndependentReviewer": true,
+    "forbidSelfReview": true,
+    "requireDistinctModel": true,
+    "requireDiffHashMatch": true,
+    "standardQuorum": 1,
+    "criticalQuorum": 2,
+    "criticalRequiresHumanApproval": false
+  },
+  "loopPolicy": {
+    "maxConsecutiveSamePremiseFailures": 2,
+    "requireVerificationArtifacts": true,
+    "autoRevertOnPostMergeFailure": true
+  },
+  "automergePolicy": {
+    "maxRevertRate": 0.005,
+    "rollingWindowSize": 200,
+    "minRequiredChecks": [
+      "slop-guard",
+      "boundary-guard",
+      "feature-map",
+      "tests"
+    ],
+    "requireZeroConstraintViolations": true,
+    "requireReviewApproval": true,
+    "enforceDiffBudget": true,
+    "blockWhenCircuitBreakerOpen": true
+  },
+  "drivers": {
+    "worker": {
+      "type": "local",
+      "id": "worker-alpha",
+      "model": "worker-default",
+      "command": null
+    },
+    "reviewers": [
+      {
+        "type": "adversarial-static",
+        "id": "interrogator-1",
+        "model": "reviewer-model-a",
+        "command": null
+      },
+      {
+        "type": "adversarial-static",
+        "id": "interrogator-2",
+        "model": "reviewer-model-b",
+        "command": null
+      }
+    ]
+  },
+  "paths": {
+    "constraints": "rules/constraints.json",
+    "featureMap": "feature-map.json",
+    "artifactsDir": "artifacts/verifications",
+    "arenaDir": "artifacts/arena",
+    "dashboardFile": "artifacts/dashboard.html",
+    "metricsLedger": ".factory/metrics.jsonl",
+    "queueFile": ".factory/queue.json",
+    "worktreesDir": ".factory/worktrees",
+    "formalSpecsDir": "formal"
+  },
+  "verification": {
+    "testCommand": null
+  }
+}

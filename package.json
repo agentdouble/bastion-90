@@ -1,0 +1,23 @@
+{
+  "name": "bastion-90",
+  "version": "1.0.0",
+  "description": "BASTION 90 — Jeu web arcade micro-survivor médiéval ultra-rapide (parties de 90 secondes).",
+  "type": "module",
+  "scripts": {
+    "dev": "node bin/serve.mjs",
+    "start": "node bin/serve.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "factory:check": "node bin/factory.mjs check",
+    "factory:verify": "node bin/factory.mjs verify"
+  },
+  "keywords": [
+    "game",
+    "html5",
+    "canvas",
+    "survivor",
+    "medieval",
+    "arcade",
+    "roguelite"
+  ],
+  "license": "MIT"
+}
