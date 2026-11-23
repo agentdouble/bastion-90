@@ -2,7 +2,8 @@ import { ARENA_HEIGHT, ARENA_WIDTH, RUN_DURATION } from "./catalog.js";
 import { createRng, getDailyDateKey } from "./rng.js";
 
 export function xpForLevel(level) {
-  return Math.round(24 + (level - 1) * 19 + Math.pow(level - 1, 1.45) * 9);
+  const previous = level - 1;
+  return Math.round(64 + previous * 34 + previous ** 1.3 * 11);
 }
 
 export function computePlayerStats(player) {
@@ -72,7 +73,7 @@ export function createInitialState(options = {}) {
     rng: createRng(seed),
     elapsed: 0,
     remaining: RUN_DURATION,
-    overtime: false,
+    defeatReason: null,
     nextEntityId: 1,
     player: createInitialPlayer(),
     enemies: [],
@@ -105,12 +106,18 @@ export function createInitialState(options = {}) {
   };
 }
 
+export function isRunOver(state) {
+  return state.status === "victory" || state.status === "defeat";
+}
+
 export function emitEvent(state, type, payload = null) {
-  state.events.push({ type, payload });
+  if (!isRunOver(state)) {
+    state.events.push({ type, payload });
+  }
 }
 
 export function addShake(state, magnitude, duration = 0.14) {
-  if (magnitude >= state.shakeMagnitude || state.shakeTime <= 0) {
+  if (!isRunOver(state) && (magnitude >= state.shakeMagnitude || state.shakeTime <= 0)) {
     state.shakeMagnitude = Math.max(state.shakeMagnitude, magnitude);
     state.shakeTime = Math.max(state.shakeTime, duration);
   }

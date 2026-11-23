@@ -1,9 +1,12 @@
 import { ARENA_HEIGHT, ARENA_MARGIN, ARENA_WIDTH } from "../domain/catalog.js";
 import { clamp, circlesOverlap, dist, normalize } from "../domain/math.js";
-import { addShake, computePlayerStats, emitEvent, showBanner } from "../domain/state.js";
+import { addShake, computePlayerStats, emitEvent, isRunOver, showBanner } from "../domain/state.js";
 import { applyUpgradeChoice as applyChoiceCore, grantXp } from "./upgrades.js";
 
 export function spawnParticles(state, x, y, color, count, speedMin = 40, speedMax = 170, size = 3.5) {
+  if (isRunOver(state)) {
+    return;
+  }
   const maxParticles = 240;
   for (let i = 0; i < count; i += 1) {
     if (state.particles.length >= maxParticles) {
@@ -54,6 +57,9 @@ export function spawnPickup(state, x, y, kind, value) {
 }
 
 export function healPlayer(state, amount) {
+  if (isRunOver(state)) {
+    return;
+  }
   const stats = computePlayerStats(state.player);
   state.player.maxHp = stats.maxHp;
   const before = state.player.hp;
@@ -94,6 +100,15 @@ export function registerComboKill(state, baseScore) {
   }
 }
 
+function finishRun(state, result, banner) {
+  showBanner(state, banner, 4);
+  emitEvent(state, result, { score: state.score });
+  state.shakeTime = 0;
+  state.shakeMagnitude = 0;
+  state.hitstopTimer = 0;
+  state.status = result;
+}
+
 function handleEnemyDeath(state, enemy) {
   registerComboKill(state, enemy.score);
   const burst = enemy.isBoss ? 34 : 11;
@@ -112,18 +127,14 @@ function handleEnemyDeath(state, enemy) {
 
   if (enemy.isFinalBoss) {
     state.bossDefeated = true;
-    const speedBonus = Math.round(Math.max(0, state.remaining) * 95);
+    const speedBonus = Math.round(state.remaining * 25);
     state.score += 1800 + speedBonus;
-    addShake(state, 15, 0.45);
-    state.hitstopTimer = 0.06;
-    state.status = "victory";
-    showBanner(state, "SEIGNEUR LICHE TERRASSÉ — VICTOIRE !", 4);
-    emitEvent(state, "victory", { score: state.score });
+    finishRun(state, "victory", "SEIGNEUR LICHE TERRASSÉ — VICTOIRE !");
   }
 }
 
 export function damageEnemy(state, enemy, rawDamage, knockX = 0, knockY = 0, stun = 0) {
-  if (enemy.hp <= 0) {
+  if (state.status !== "playing" || enemy.hp <= 0) {
     return false;
   }
   const stats = computePlayerStats(state.player);
@@ -157,6 +168,11 @@ export function damageEnemy(state, enemy, rawDamage, knockX = 0, knockY = 0, stu
   return false;
 }
 
+export function defeatRun(state, reason) {
+  state.defeatReason = reason;
+  finishRun(state, "defeat", reason === "timeout" ? "TEMPS ÉCOULÉ" : "LE BASTION EST TOMBÉ");
+}
+
 export function damagePlayer(state, amount, sourceX, sourceY) {
   const player = state.player;
   if (player.invulnTimer > 0 || player.dashTimer > 0 || state.status !== "playing") {
@@ -175,9 +191,7 @@ export function damagePlayer(state, amount, sourceX, sourceY) {
   emitEvent(state, "player_hit", { amount });
 
   if (player.hp <= 0) {
-    state.status = "defeat";
-    showBanner(state, "LE BASTION EST TOMBÉ", 4);
-    emitEvent(state, "defeat", { score: state.score });
+    defeatRun(state, "fallen");
   }
   return true;
 }

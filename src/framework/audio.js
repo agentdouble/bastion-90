@@ -1,4 +1,14 @@
+import { BOSS_TIME, FINAL_COUNTDOWN, MINIBOSS_TIME, SURGE_TIME } from "../domain/catalog.js";
+
 const DORIAN_HZ = [293.66, 329.63, 349.23, 392.0, 440.0, 493.88, 523.25, 587.33];
+
+function getDrumInterval(elapsed, remaining) {
+  if (remaining <= FINAL_COUNTDOWN) return 0.28;
+  if (elapsed >= BOSS_TIME) return 0.34;
+  if (elapsed >= MINIBOSS_TIME) return 0.44;
+  if (elapsed >= SURGE_TIME) return 0.54;
+  return 0.62;
+}
 
 function ensureAudioContext(bus) {
   if (bus.muted || bus.unavailable) {
@@ -173,6 +183,10 @@ export function createAudioEngine(initialMuted = false) {
     },
     processEvents(events) {
       for (const evt of events) {
+        if (evt.type === "run_start") {
+          bus.drumTimer = 0;
+          bus.drumBeat = 0;
+        }
         if (!playWeaponSfx(bus, evt.type) && !playCombatSfx(bus, evt.type)) {
           playFanfareSfx(bus, evt.type);
         }
@@ -182,7 +196,7 @@ export function createAudioEngine(initialMuted = false) {
       if (state.status !== "playing" || bus.muted) {
         return;
       }
-      const interval = state.overtime ? 0.28 : state.bossSpawned ? 0.34 : state.elapsed > 35 ? 0.42 : 0.52;
+      const interval = getDrumInterval(state.elapsed, state.remaining);
       bus.drumTimer -= dt;
       if (bus.drumTimer <= 0) {
         bus.drumTimer = interval;

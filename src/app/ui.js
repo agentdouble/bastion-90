@@ -1,4 +1,5 @@
 import {
+  FINAL_COUNTDOWN,
   PASSIVE_CATALOG,
   WEAPON_CATALOG,
   computeRank,
@@ -10,6 +11,12 @@ function formatClock(seconds) {
   const mins = Math.floor(safe / 60);
   const secs = safe % 60;
   return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+}
+
+function formatRunTime(seconds) {
+  const tenths = Math.round(seconds * 10);
+  const clock = formatClock(Math.floor(tenths / 10));
+  return tenths % 10 === 0 ? clock : `${clock},${tenths % 10}`;
 }
 
 function queryNodes() {
@@ -88,11 +95,12 @@ function renderHudView(nodes, uiState, state) {
   nodes.xpFill.style.width = `${Math.min(100, (p.xp / p.xpToNext) * 100)}%`;
   renderLoadoutStrip(nodes, uiState, p);
 
-  nodes.phase.textContent = getPhaseLabel(state.elapsed, state.bossSpawned, state.overtime);
-  nodes.timer.textContent = state.overtime ? "AUBE !" : formatClock(state.remaining);
-  nodes.timer.classList.toggle("urgent", state.remaining <= 15 || state.overtime);
+  nodes.phase.textContent = getPhaseLabel(state.elapsed);
+  nodes.timer.textContent = formatClock(state.remaining);
+  nodes.timer.classList.toggle("urgent", state.remaining <= FINAL_COUNTDOWN);
 
-  const boss = state.enemies.find((enemy) => enemy.isBoss && enemy.hp > 0);
+  const boss = state.enemies.find((enemy) => enemy.isFinalBoss && enemy.hp > 0)
+    || state.enemies.find((enemy) => enemy.isBoss && enemy.hp > 0);
   if (boss) {
     nodes.bossWrap.classList.remove("hidden");
     nodes.bossName.textContent = boss.name.toUpperCase();
@@ -135,17 +143,19 @@ function renderUpgradeCardsView(nodes, state, onPickChoice) {
 
 function renderEndSummaryView(nodes, state, records) {
   const victory = state.status === "victory";
+  const timedOut = state.defeatReason === "timeout";
+  const duration = formatRunTime(state.elapsed);
   const rank = computeRank(state.score, victory, state.elapsed);
   nodes.endBadge.textContent = victory ? "⚔ VICTOIRE ROYALE ⚔" : "☠ LE BASTION A CÉDÉ ☠";
-  nodes.endTitle.textContent = victory ? "AUBE CONQUISE !" : "TOMBÉ AU COMBAT";
+  nodes.endTitle.textContent = victory ? "AUBE CONQUISE !" : timedOut ? "Temps écoulé" : "TOMBÉ AU COMBAT";
   nodes.endSubtitle.textContent = victory
-    ? `Seigneur Liche terrassé en ${state.elapsed.toFixed(1)}s • Série : ${records.winStreak}`
-    : `Tu as tenu ${state.elapsed.toFixed(1)}s face à la horde. Retente et forge un build imparable !`;
+    ? `Seigneur Liche terrassé en ${duration} • Série : ${records.winStreak}`
+    : timedOut ? "Le Seigneur Liche est toujours en vie." : `Tu as tenu ${duration} face à la horde.`;
   nodes.endRank.textContent = rank;
 
   nodes.endStats.innerHTML = [
     `<div class="stat-tile"><span>SCORE</span><strong>${state.score.toLocaleString("fr-FR")}</strong></div>`,
-    `<div class="stat-tile"><span>TEMPS</span><strong>${state.elapsed.toFixed(1)}s</strong></div>`,
+    `<div class="stat-tile"><span>TEMPS</span><strong>${duration}</strong></div>`,
     `<div class="stat-tile"><span>ENNEMIS VAINCUS</span><strong>${state.kills}</strong></div>`,
     `<div class="stat-tile"><span>COMBO MAX</span><strong>×${state.maxCombo}</strong></div>`,
     `<div class="stat-tile"><span>PARADES</span><strong>${state.grazeCount}</strong></div>`,
@@ -195,7 +205,7 @@ export function createUiController(handlers) {
     },
     renderRecords(records, dateKey) {
       const dailyScore = records.dailyBest[dateKey] || 0;
-      const bestTime = records.bestVictoryTime !== null ? `${records.bestVictoryTime.toFixed(1)}s` : "—";
+      const bestTime = records.bestVictoryTime !== null ? formatRunTime(records.bestVictoryTime) : "—";
       nodes.recordsRow.innerHTML = [
         `<div class="record-card"><span>MEILLEUR SCORE</span><strong>${records.bestScore.toLocaleString("fr-FR")}</strong></div>`,
         `<div class="record-card"><span>RECORD VICTOIRE</span><strong>${bestTime}</strong></div>`,

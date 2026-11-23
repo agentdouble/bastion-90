@@ -1,17 +1,28 @@
 import { ARENA_HEIGHT, ARENA_MARGIN, ARENA_WIDTH, RUN_DURATION } from "../domain/catalog.js";
 import { clamp, normalize } from "../domain/math.js";
 import { computePlayerStats, createInitialState, emitEvent, showBanner } from "../domain/state.js";
-import { applyUpgradeChoice, spawnParticles, updatePickups } from "./combat.js";
+import { applyUpgradeChoice, defeatRun, spawnParticles, updatePickups } from "./combat.js";
 import { updateEnemies, updateEnemyProjectiles } from "./enemies.js";
 import { spawnInitialSkirmish, updateSpawner } from "./spawner.js";
 import { updatePlayerProjectiles, updateWeapons, updateZonesAndEffects } from "./weapons.js";
 
 export { applyUpgradeChoice };
 
+const ACTIVE_SYSTEMS = [
+  updateSpawner,
+  updateWeapons,
+  updatePlayerProjectiles,
+  updateZonesAndEffects,
+  updateEnemies,
+  updateEnemyProjectiles,
+  updatePickups,
+  updateParticlesAndTexts
+];
+
 export function startNewRun(options = {}) {
   const state = createInitialState(options);
   spawnInitialSkirmish(state);
-  showBanner(state, "⚔ TIENS LE BASTION — 90 SECONDES ! ⚔", 2.2);
+  showBanner(state, "⚔ TIENS LE BASTION — 10 MINUTES ! ⚔", 2.2);
   emitEvent(state, "run_start");
   return state;
 }
@@ -90,6 +101,10 @@ export function stepSimulation(state, input, rawDt) {
   const dt = clamp(rawDt, 0, 0.05);
   state.events = [];
 
+  if (state.status !== "playing" || dt === 0) {
+    return state;
+  }
+
   if (state.bannerTimer > 0) {
     state.bannerTimer = Math.max(0, state.bannerTimer - dt);
   }
@@ -100,22 +115,19 @@ export function stepSimulation(state, input, rawDt) {
     }
   }
 
-  if (state.status !== "playing") {
-    return state;
-  }
-
   if (state.hitstopTimer > 0) {
     state.hitstopTimer = Math.max(0, state.hitstopTimer - dt);
     updateParticlesAndTexts(state, dt * 0.5);
     return state;
   }
 
-  state.elapsed += dt;
-  state.remaining = Math.max(0, RUN_DURATION - state.elapsed);
-  if (state.remaining <= 0 && !state.overtime && !state.bossDefeated) {
-    state.overtime = true;
-    showBanner(state, "☀ AUBE SANGLANTE — ACHÈVE LE LICHE ! ☀", 3.5);
-    emitEvent(state, "overtime");
+  const elapsed = state.elapsed + dt;
+  const nearestSecond = Math.round(elapsed);
+  state.elapsed = Math.min(RUN_DURATION, Math.abs(elapsed - nearestSecond) < 1e-9 ? nearestSecond : elapsed);
+  state.remaining = RUN_DURATION - state.elapsed;
+  if (state.remaining === 0) {
+    defeatRun(state, "timeout");
+    return state;
   }
 
   if (state.comboTimer > 0) {
@@ -125,14 +137,12 @@ export function stepSimulation(state, input, rawDt) {
   }
 
   updatePlayer(state, input, dt);
-  updateSpawner(state, dt);
-  updateWeapons(state, dt);
-  updatePlayerProjectiles(state, dt);
-  updateZonesAndEffects(state, dt);
-  updateEnemies(state, dt);
-  updateEnemyProjectiles(state, dt);
-  updatePickups(state, dt);
-  updateParticlesAndTexts(state, dt);
+  for (const update of ACTIVE_SYSTEMS) {
+    if (state.status !== "playing") {
+      break;
+    }
+    update(state, dt);
+  }
 
   return state;
 }
