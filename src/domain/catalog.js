@@ -1,9 +1,11 @@
 export const ARENA_WIDTH = 1320;
 export const ARENA_HEIGHT = 860;
 export const ARENA_MARGIN = 46;
-export const RUN_DURATION = 90;
-export const MINIBOSS_TIME = 45;
-export const BOSS_TIME = 65;
+export const RUN_DURATION = 600;
+export const SURGE_TIME = 120;
+export const MINIBOSS_TIME = 270;
+export const BOSS_TIME = 510;
+export const FINAL_COUNTDOWN = 30;
 
 export const WEAPON_CATALOG = {
   dawn_blade: {
@@ -214,7 +216,7 @@ export const ENEMY_CATALOG = {
   executioner: {
     id: "executioner",
     name: "Exécuteur d'Acier",
-    hp: 760,
+    hp: 1400,
     speed: 108,
     damage: 26,
     radius: 30,
@@ -226,7 +228,7 @@ export const ENEMY_CATALOG = {
   arch_lich: {
     id: "arch_lich",
     name: "SEIGNEUR LICHE",
-    hp: 1950,
+    hp: 6200,
     speed: 98,
     damage: 28,
     radius: 34,
@@ -241,33 +243,30 @@ export const ENEMY_CATALOG = {
 export const WEAPON_IDS = Object.keys(WEAPON_CATALOG);
 export const PASSIVE_IDS = Object.keys(PASSIVE_CATALOG);
 
-export function getPhaseLabel(elapsed, bossSpawned, overtime) {
-  if (overtime) {
-    return "AUBE SANGLANTE — ACHÈVE LE LICHE !";
-  }
-  if (bossSpawned) {
+export function getPhaseLabel(elapsed) {
+  if (elapsed >= BOSS_TIME) {
     return "BOSS FINAL — SEIGNEUR LICHE";
   }
   if (elapsed >= MINIBOSS_TIME) {
     return "L'ASSAUT INFERNAL";
   }
-  if (elapsed >= 20) {
+  if (elapsed >= SURGE_TIME) {
     return "LA MARÉE SOMBRE";
   }
   return "L'AVANT-GARDE";
 }
 
 export function computeRank(score, victory, elapsed) {
-  if (victory && (score >= 9500 || elapsed <= 84)) {
+  if (victory && (score >= 200000 || elapsed <= RUN_DURATION - 25)) {
     return "S+";
   }
-  if (victory && score >= 6500) {
+  if (victory && score >= 100000) {
     return "S";
   }
-  if (victory || score >= 5200) {
+  if (victory || score >= 45000) {
     return "A";
   }
-  if (score >= 2800) {
+  if (score >= 15000) {
     return "B";
   }
   return "C";

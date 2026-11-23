@@ -1,12 +1,12 @@
 # ⚔️ BASTION 90
 
-> **Micro-Survivor Médiéval Express (90 secondes)** — Jeu web arcade ultra-rapide en HTML5 Canvas & Web Audio procédural, sans dépendances runtime.
+> **Survie médiévale en 10 minutes** — Jeu web arcade en HTML5 Canvas et Web Audio procédural, sans dépendances runtime.
 
-Tiens la cour du château face à une horde croissante, forge ton arsenal médiéval à la volée, enchaîne les **Parades** en roulade et terrasse le **Seigneur Liche** avant l'Aube Sanglante.
+Tiens la cour du château face à une horde croissante, forge ton arsenal médiéval à la volée, enchaîne les **Parades** en roulade et terrasse le **Seigneur Liche** avant l'aube.
 
 ## ✨ Points forts
 
-- **Parties ultra-rapides (90 secondes)** : escalade immédiate dès la première seconde, Mini-Boss (*Exécuteur d'Acier*) à `0:45`, Boss Final (*Seigneur Liche*) à `0:65` avec 3 patterns télégraphiés.
+- **Parties de 10 minutes en Siège classique et en Défi du jour.** L'Exécuteur d'Acier apparaît après `4:30` de jeu actif et le Seigneur Liche après `8:30`. Le compte à rebours se fige en pause et pendant les choix de la Forge. À `10:00`, la partie est perdue si le Seigneur Liche vit encore.
 - **Arsenal Médiéval + Éveil (Forge)** : 6 armes auto-déclenchées (*Lame de l'Aube*, *Fléau Orbital*, *Hache du Berserker*, *Feu Grégeois*, *Foudre Runique*, *Onde du Bouclier*) + 6 reliques passives. Atteindre le **Niveau 4** éveille l'arme en version **FORGÉE ★**.
 - **Gameplay nerveux & skill-based** : Roulade invulnérable avec mécanique de **Parade / Frôlement** (bonus de score, combo + recharge de roulade réduite).
 - **Audio procédural 100% Web Audio API** : gamme dorienne ascendante à chaque gemme d'XP, effets d'acier/foudre/feu, cor de guerre pour les boss et tambour de siège dynamique.

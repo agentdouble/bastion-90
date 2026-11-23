@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "description": "Feature Map for BASTION 90 — 90-second medieval micro-survivor web game.",
+  "description": "Feature Map for BASTION 90 — ten-minute medieval survivor web game.",
   "features": [
     {
       "id": "domain-catalog-and-rng",
@@ -21,7 +21,7 @@
     },
     {
       "id": "headless-survivor-engine",
-      "name": "90-Second Combat, Wave & Boss Simulation Engine",
+      "name": "Ten-Minute Combat, Wave & Boss Simulation Engine",
       "surface": "engine",
       "owner": "engineering",
       "files": [
@@ -34,7 +34,10 @@
       ],
       "invariants": [
         "Engine executes deterministically without DOM or browser globals",
-        "Arch-Lich boss spawns at 65s and defeating it transitions to victory",
+        "The Executioner and Arch-Lich each spawn once, at 270 and 510 seconds of active play",
+        "Defeating the Arch-Lich before 600 seconds wins the run and awards a bonus for time remaining",
+        "Hero death or reaching 600 seconds with the Arch-Lich alive ends the run and freezes gameplay",
+        "Forge choices freeze active time and carry excess XP into subsequent levels",
         "All entity positions remain finite and clamped within arena boundaries"
       ],
       "verificationProbe": "npm test"
@@ -83,6 +86,8 @@
         "src/app/main.js"
       ],
       "invariants": [
+        "Both game modes start with a 10:00 countdown that freezes during pause and Forge choices",
+        "The end summary distinguishes a fallen hero from a timeout",
         "Instant restart resets simulation cleanly without page reload"
       ],
       "verificationProbe": "npm run factory:verify"

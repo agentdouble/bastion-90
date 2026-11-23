@@ -132,15 +132,12 @@ export function createArenaRenderer() {
       }
       ctx.drawImage(cachedCourtyard, 0, 0);
 
-      const eerie = state.bossSpawned || state.overtime;
+      const eerie = state.bossSpawned;
       for (const brazier of BRAZIERS) {
         drawBrazier(ctx, brazier, time, eerie);
       }
 
-      if (state.overtime) {
-        ctx.fillStyle = "rgba(155, 22, 28, 0.14)";
-        ctx.fillRect(0, 0, ARENA_WIDTH, ARENA_HEIGHT);
-      } else if (state.bossSpawned) {
+      if (eerie) {
         ctx.fillStyle = "rgba(68, 18, 96, 0.11)";
         ctx.fillRect(0, 0, ARENA_WIDTH, ARENA_HEIGHT);
       }

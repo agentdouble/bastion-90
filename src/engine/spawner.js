@@ -4,7 +4,9 @@ import {
   ARENA_WIDTH,
   BOSS_TIME,
   ENEMY_CATALOG,
-  MINIBOSS_TIME
+  MINIBOSS_TIME,
+  RUN_DURATION,
+  SURGE_TIME
 } from "../domain/catalog.js";
 import { clamp, dist } from "../domain/math.js";
 import { addShake, emitEvent, showBanner } from "../domain/state.js";
@@ -41,7 +43,7 @@ function pickSpawnEdgePoint(state) {
 export function spawnEnemy(state, kind, customPos = null) {
   const def = ENEMY_CATALOG[kind];
   const pos = customPos || pickSpawnEdgePoint(state);
-  const scale = 1 + (state.elapsed / 90) * 0.42;
+  const scale = 1 + (state.elapsed / RUN_DURATION) * 0.42;
   const hp = Math.round(def.hp * (def.isBoss ? 1 : scale));
 
   const enemy = {
@@ -95,16 +97,16 @@ export function spawnInitialSkirmish(state) {
 function chooseWaveKind(state) {
   const t = state.elapsed;
   const r = state.rng.next();
-  if (t < 15) {
+  if (t < SURGE_TIME) {
     return r < 0.72 ? "goblin" : "skeleton";
   }
-  if (t < 32) {
+  if (t < MINIBOSS_TIME) {
     if (r < 0.36) return "goblin";
     if (r < 0.72) return "skeleton";
     if (r < 0.88) return "charger";
     return "cultist";
   }
-  if (t < 52) {
+  if (t < BOSS_TIME) {
     if (r < 0.25) return "goblin";
     if (r < 0.5) return "skeleton";
     if (r < 0.7) return "charger";
@@ -119,19 +121,7 @@ function chooseWaveKind(state) {
 }
 
 function getSpawnRate(state) {
-  if (state.overtime) {
-    return 0.45;
-  }
-  if (state.bossSpawned) {
-    return 1.35;
-  }
-  if (state.elapsed < 15) {
-    return 1.55;
-  }
-  if (state.elapsed < 35) {
-    return 2.35;
-  }
-  return 3.15;
+  return state.bossSpawned ? 0.75 : 0.62 + 0.98 * (state.elapsed / BOSS_TIME);
 }
 
 export function updateSpawner(state, dt) {
@@ -160,7 +150,7 @@ export function updateSpawner(state, dt) {
   while (state.spawnAccumulator >= 1 && state.enemies.length < maxEnemies) {
     state.spawnAccumulator -= 1;
     const kind = chooseWaveKind(state);
-    const packSize = kind === "goblin" ? 2 : 1;
+    const packSize = kind === "goblin" ? Math.min(2, maxEnemies - state.enemies.length) : 1;
     for (let i = 0; i < packSize; i += 1) {
       spawnEnemy(state, kind);
     }

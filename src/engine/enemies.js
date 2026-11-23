@@ -110,7 +110,7 @@ function executeLichPattern(state, enemy, enraged) {
 
 function updateArchLichAi(state, enemy, dt, speedMult) {
   const player = state.player;
-  const enraged = state.overtime || enemy.hp < enemy.maxHp * 0.45;
+  const enraged = enemy.hp < enemy.maxHp * 0.45;
   enemy.aiTimer -= dt * (enraged ? 1.32 : 1);
 
   if (enemy.aiState === "windup") {
@@ -218,6 +218,9 @@ export function updateEnemies(state, dt) {
       triggerGraze(state, (player.x + enemy.x) * 0.5, (player.y + enemy.y) * 0.5);
     } else if (circlesOverlap(player.x, player.y, player.radius - 2, enemy.x, enemy.y, enemy.radius - 2)) {
       damagePlayer(state, enemy.damage, enemy.x, enemy.y);
+      if (state.status === "defeat") {
+        return;
+      }
     }
   }
 
@@ -250,6 +253,9 @@ export function updateEnemyProjectiles(state, dt) {
 
     if (circlesOverlap(player.x, player.y, player.radius - 2, proj.x, proj.y, proj.radius)) {
       damagePlayer(state, proj.damage, proj.x, proj.y);
+      if (state.status === "defeat") {
+        return;
+      }
       continue;
     }
     kept.push(proj);
